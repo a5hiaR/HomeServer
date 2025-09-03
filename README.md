@@ -25,3 +25,5 @@ See below inteded features.
     - Who, What, Where, When, latency
     - Error logging ofc
     - Include information when high latency or client has to pause to await media
+## Progress
+I have yet to start, and this is honestly a test commit.
