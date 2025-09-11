@@ -17,7 +17,7 @@ public class StaticHandler implements HttpHandler {
         
         String path = this.exchange.getRequestURI().getPath();
 
-        if (path.equals("/")) {path = "/index.html";}
+        if (path.endsWith("/")) {path += "index.html";}
 
         InputStream resourceStream = getClass().getClassLoader().getResourceAsStream("webroot"+path);
 
@@ -49,15 +49,29 @@ public class StaticHandler implements HttpHandler {
 
         String response = "This is a mediocre 404";
         
-        this.exchange.getResponseHeaders().set("Content-Type","text/plain");
-        this.exchange.sendResponseHeaders(404, response.getBytes().length);
-        
 
         try(OutputStream os = this.exchange.getResponseBody()) {
+            this.exchange.getResponseHeaders().set("Content-Type","text/plain");
+            this.exchange.sendResponseHeaders(404, response.getBytes().length);
+
             os.write(response.getBytes());
-            System.out.println("Sent 404 data to "+clientIP);
+            System.out.println("Sent 404 to "+clientIP);
         } catch (Exception exception) {
-            System.out.println(exception+" sending 404 data to "+this.clientIP);
+            System.out.println(exception+" sending 404 to "+this.clientIP);
+        }
+    }
+
+    public void sendErr(int err) throws IOException {
+        String response = err+" Error!?";
+
+        try(OutputStream os = this.exchange.getResponseBody()) {
+        this.exchange.getResponseHeaders().set("Content-Tyoe", "text/plain");
+        this.exchange.sendResponseHeaders(err, response.getBytes().length);
+
+            os.write(response.getBytes()):
+            System.out.println("Sent "+err+" error to "+clientIP);
+        } catch (Exception exception) {
+            System.out.println(exception+" sending "+err+" to "+ clientIP);
         }
     }
 
