@@ -17,7 +17,7 @@ public class StaticHandler implements HttpHandler {
         
         String path = this.exchange.getRequestURI().getPath();
 
-        if (path == "/" || path == "") {path = "/index.html";}
+        if (path.equals("/")) {path = "/index.html";}
 
         InputStream resourceStream = getClass().getClassLoader().getResourceAsStream("webroot"+path);
 
@@ -36,10 +36,12 @@ public class StaticHandler implements HttpHandler {
             this.exchange.sendResponseHeaders(200, 0);
 
             while((bytesRead = is.read(buffer)) != -1) {
-                    os.write(buffer, 0, bytesRead);
+                os.write(buffer, 0, bytesRead);
             }
+
+            System.out.println("Sent "+path+" to "+this.clientIP);
         } catch (Exception exception) {
-            System.out.println(exception+" sending data to "+this.clientIP);
+            System.out.println(exception+" sending "+path+" to "+this.clientIP);
         }
     }
 
