@@ -26,4 +26,4 @@ See below inteded features.
     - Error logging ofc
     - Include information when high latency or client has to pause to await media
 ## Progress
-I have yet to start, and this is honestly a test commit.
+I have a very basic status service and file serving service... yeah ts not locked.
