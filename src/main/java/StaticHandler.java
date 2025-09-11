@@ -68,7 +68,7 @@ public class StaticHandler implements HttpHandler {
         this.exchange.getResponseHeaders().set("Content-Tyoe", "text/plain");
         this.exchange.sendResponseHeaders(err, response.getBytes().length);
 
-            os.write(response.getBytes()):
+            os.write(response.getBytes());
             System.out.println("Sent "+err+" error to "+clientIP);
         } catch (Exception exception) {
             System.out.println(exception+" sending "+err+" to "+ clientIP);
