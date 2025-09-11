@@ -27,3 +27,21 @@ See below inteded features.
     - Include information when high latency or client has to pause to await media
 ## Progress
 I have a very basic status service and file serving service... yeah ts not locked.
+## Working on
+Going to use this to write out plans for what I am working on.
+
+- Backend Interface
+  - Require log-on
+    - SQLite Integration
+  - Incl. server performance stats
+    - Disk R/W by drive
+    - CPU Performance
+    - Temp's
+    - Errors in x time frame (start static, make variable eventually)
+  - Incl. recent IPs
+    - Interaction #'s by IP
+    - Most recent request
+  - General log access
+    - Searching of server logs
+  - Future
+    - Samba Integration (User R/W, use, etc)
