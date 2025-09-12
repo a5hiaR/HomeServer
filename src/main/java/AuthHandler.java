@@ -43,4 +43,17 @@ public class AuthHandler() implements HttpHandler{
 
         return parsedLogin;
     }
+
+    private void sendResponse(int status, String json) throws IOException {
+        exchange.getResponseHeaders().set("Content-Type", "application/json");
+        byte[] response = json.getBytes(StandardCharsets.UTF_8);
+        exchange.sendResponseHeaders(status, response.length);
+
+        try (OutputStream os = exchange.getResponseBody()) {
+            os.write(response);
+            System.out.println("AuthHandler sent "+status+" to "+clientIP);
+        } catch (Exception exception) {
+            System.out.println(exception+"@AuthHandler sending data to "+clientIP);
+        }
+    }
 }
