@@ -16,7 +16,9 @@ public class MainServer {
 
         StatusHandler StatusHandler = new StatusHandler(StatusService);
         StaticHandler StaticHandler = new StaticHandler();
+        AuthHandler AuthHandler = new AuthHandler();
 
+        server.createContext("/api/auth", AuthHandler);
         server.createContext("/api/status", StatusHandler);
         server.createContext("/", StaticHandler);
 
