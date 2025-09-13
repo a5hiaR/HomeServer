@@ -31,7 +31,7 @@ I have a very basic status service and file serving service... yeah ts not locke
 Going to use this to write out plans for what I am working on.
 
 - Backend Interface
-  - Require log-on
+  - Require log-on (Admin Logon done, auth tokens and front end to test necessary.)
     - SQLite Integration
   - Incl. server performance stats
     - Disk R/W by drive
