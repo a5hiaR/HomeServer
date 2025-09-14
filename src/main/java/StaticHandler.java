@@ -20,9 +20,7 @@ public class StaticHandler implements HttpHandler {
 
         if (path.endsWith("/")) {path += "index.html";}
 
-        InputStream resourceStream = getClass().getClassLoader().getResourceAsStream("webroot"+path);
-
-        if (resourceStream == null) {
+        if (getClass().getClassLoader().getResourceAsStream("webroot"+path) == null) {
             send404();
             return;
         }
@@ -61,7 +59,7 @@ public class StaticHandler implements HttpHandler {
         String response = err+" Error!?";
 
         try(OutputStream os = this.exchange.getResponseBody()) {
-        this.exchange.getResponseHeaders().set("Content-Tyoe", "text/plain");
+        this.exchange.getResponseHeaders().set("Content-Type", "text/plain");
         this.exchange.sendResponseHeaders(err, response.getBytes().length);
 
             os.write(response.getBytes());
