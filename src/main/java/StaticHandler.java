@@ -14,6 +14,7 @@ public class StaticHandler implements HttpHandler {
     public void handle(HttpExchange exchange) throws IOException {
         this.exchange = exchange;
         this.clientIP = this.exchange.getRemoteAddress().getAddress().getHostAddress();
+        AuthHandler AuthHandler = new AuthHandler();
         
         String path = this.exchange.getRequestURI().getPath();
 
@@ -26,22 +27,17 @@ public class StaticHandler implements HttpHandler {
             return;
         }
 
-        exchange.getResponseHeaders().set("Content-Type", getContentType(path));
-
-        try (OutputStream os = exchange.getResponseBody();
-            InputStream is = resourceStream;) {
-            
-            byte[] buffer = new byte[8192];
-            int bytesRead;
-            this.exchange.sendResponseHeaders(200, 0);
-
-            while((bytesRead = is.read(buffer)) != -1) {
-                os.write(buffer, 0, bytesRead);
-            }
-
-            System.out.println("Sent "+path+" to "+this.clientIP);
-        } catch (Exception exception) {
-            System.out.println(exception+" sending "+path+" to "+this.clientIP);
+        switch (path) {
+            case "/admin/index.html":
+                if(AuthHandler.checkTokenFromCookie(this.exchange.getRequestHeaders().getFirst("Cookie")) == null) {
+                    sendErr(401);
+                } else {
+                    sendResponse(200, path);
+                }
+                break;
+            default:
+                sendResponse(200, path);
+                break;
         }
     }
 
@@ -82,5 +78,26 @@ public class StaticHandler implements HttpHandler {
         if (p.endsWith(".png")) return "image/png";
         if (p.endsWith(".jpg") || p.endsWith(".jpeg")) return "image/jpeg";
         return "application/octet-stream";
+    }
+
+    public void sendResponse(int status, String path) throws IOException {
+        exchange.getResponseHeaders().set("Content-Type", getContentType(path));
+        InputStream resourceStream = getClass().getClassLoader().getResourceAsStream("webroot"+path);
+        
+        try (OutputStream os = exchange.getResponseBody();
+            InputStream is = resourceStream;) {
+            
+            byte[] buffer = new byte[8192];
+            int bytesRead;
+            this.exchange.sendResponseHeaders(status, 0);
+
+            while((bytesRead = is.read(buffer)) != -1) {
+                os.write(buffer, 0, bytesRead);
+            }
+
+            System.out.println("Sent "+path+" to "+this.clientIP);
+        } catch (Exception exception) {
+            System.out.println(exception+" sending "+path+" to "+this.clientIP);
+        }
     }
 }

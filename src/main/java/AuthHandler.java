@@ -14,7 +14,8 @@ import java.util.UUID;
 public class AuthHandler implements HttpHandler {
     private String clientIP;
     private HttpExchange exchange;
-    private Map<String, String> sessions= new HashMap<>();
+    private static Map<String, String> sessions = new HashMap<>();
+
     public void handle(HttpExchange exchange) throws IOException {
         this.exchange = exchange;
         this.clientIP = this.exchange.getRemoteAddress().getAddress().getHostAddress();
@@ -32,22 +33,43 @@ public class AuthHandler implements HttpHandler {
                     String tkn = UUID.randomUUID().toString();
                     sessions.put(tkn, usr);
 
-                    exchange.getResponseHeaders().add("Set-Cookie", "sessionToken=" + tkn + "; Path=/; HttpOnly; SameSite=Strict");
+                    exchange.getResponseHeaders().add("Set-Cookie", "sessionToken=" + tkn + "; Path=/admin; HttpOnly; SameSite=Strict");
                     
-                    sendResponse(200, "{\"login\":1}");
+                    exchange.getResponseHeaders().add("Location", "/admin/index.html");
+
+                    exchange.sendResponseHeaders(303, -1);
 
                     System.out.println("AuthHandler: sucessful login from "+ this.clientIP);
                 } else {sendResponse(403, "{\"login\":0}");}
-            } else if (path.equals("/api/auth/token")) {
-                String tkn = parseLogin(body).get("tkn");
-
-                if (sessions.containsKey(tkn)) {
-                    
-                } else {
-
-                }
             }
         }
+    }
+
+    public String checkTokenFromCookie(String cookie) throws IOException {
+        return checkToken(parseCookie(cookie).get("sessionToken"));
+    }
+
+    public String checkToken(String tkn) {
+        if (sessions.containsKey(tkn)) {
+            return sessions.get(tkn);
+        } else {
+            return null;
+        }
+    }
+
+     private Map<String, String> parseCookie(String str) throws IOException {
+        Map<String, String> parsedCookie = new HashMap<>();
+
+        String[] pairs = str.split("; ");
+    
+        for (String pair : pairs) {
+            String[] keyValue = pair.split("=");
+            String key = keyValue[0];
+            String value = keyValue.length > 1 ? keyValue[1] : "";
+            parsedCookie.put(key, value);
+        }
+
+        return parsedCookie;
     }
 
     private Map<String, String> parseLogin(String str) throws IOException {
