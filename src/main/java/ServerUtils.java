@@ -83,7 +83,7 @@ public class ServerUtils {
             }
 
             exchange.getResponseHeaders().set("Content-Type", getContentType(path));
-            exchange.sendResponseHeaders(status, 0); // Use chunked transfer encoding
+            exchange.sendResponseHeaders(status, 0);
 
             try (OutputStream os = exchange.getResponseBody()) {
                 resourceStream.transferTo(os);

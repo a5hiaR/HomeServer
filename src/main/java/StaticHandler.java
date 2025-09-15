@@ -16,19 +16,19 @@ public class StaticHandler implements HttpHandler {
         try {
             String path = exchange.getRequestURI().getPath();
 
-        if (path.endsWith("/")) {
-            path += "index.html";
-        }
-
-        if (path.startsWith("/admin/")) {
-            String user = authHandler.checkTokenFromCookie(exchange.getRequestHeaders().getFirst("Cookie"));
-            if (user == null && !path.equals("/admin/login.html")) {
-                ServerUtils.sendRedirectResponse(exchange, "/admin/login.html", null, logger);
-                return;
+            if (path.endsWith("/")) {
+                path += "index.html";
             }
-        }
 
-        ServerUtils.sendFileResponse(exchange, 200, path, logger);
+            if (path.startsWith("/admin/")) {
+                String user = authHandler.checkTokenFromCookie(exchange.getRequestHeaders().getFirst("Cookie"));
+                if (user == null && !path.equals("/admin/login.html")) {
+                    ServerUtils.sendRedirectResponse(exchange, "/admin/login.html", null, logger);
+                    return;
+                }
+            }
+
+            ServerUtils.sendFileResponse(exchange, 200, path, logger);
         } finally {
             exchange.close();
         }

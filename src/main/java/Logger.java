@@ -46,7 +46,7 @@ public class Logger {
     }
 
     public static void shutdown() {
-        flushBuffer(); // Final flush before shutdown
+        flushBuffer();
         scheduler.shutdown();
     }
 
