@@ -12,15 +12,22 @@ public class MainServer {
     public static void main(String[] args) throws IOException {
         StatusService StatusService = new StatusService();
 
+        Logger authLogger = new Logger("AuthHandler");
+        Logger staticLogger = new Logger("StaticHandler");
+        Logger statusLogger = new Logger("StatusHandler");
+
         HttpServer server = HttpServer.create(new InetSocketAddress(8080), 5);
 
-        StatusHandler StatusHandler = new StatusHandler(StatusService);
-        StaticHandler StaticHandler = new StaticHandler();
-        AuthHandler AuthHandler = new AuthHandler();
+        AuthHandler authHandler = new AuthHandler(authLogger);
 
-        server.createContext("/api/auth", AuthHandler);
-        server.createContext("/api/status", StatusHandler);
-        server.createContext("/", StaticHandler);
+        StatusHandler statusHandler = new StatusHandler(StatusService, statusLogger);
+        StaticHandler staticHandler = new StaticHandler(staticLogger, authHandler);
+
+        server.createContext("/api/auth", authHandler);
+        server.createContext("/api/status", statusHandler);
+        server.createContext("/", staticHandler);
+
+        Runtime.getRuntime().addShutdownHook(new Thread(Logger::shutdown));
 
         server.start();
 

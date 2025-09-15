@@ -7,15 +7,22 @@ import java.io.OutputStream;
 
 import org.json.JSONObject;
 
+import java.util.HashMap;
+
 public class StaticHandler implements HttpHandler {
     private String clientIP;
     private HttpExchange exchange;
+    private Logger logger;
+    private AuthHandler authHandler;
+
+    public StaticHandler(Logger logger, AuthHandler authHandler) {
+        this.logger = logger;
+        this.authHandler = authHandler;
+    }
 
     public void handle(HttpExchange exchange) throws IOException {
         this.exchange = exchange;
         this.clientIP = this.exchange.getRemoteAddress().getAddress().getHostAddress();
-        AuthHandler AuthHandler = new AuthHandler();
-        
         String path = this.exchange.getRequestURI().getPath();
 
         if (path.endsWith("/")) {path += "index.html";}
@@ -27,7 +34,7 @@ public class StaticHandler implements HttpHandler {
 
         switch (path) {
             case "/admin/index.html":
-                if(AuthHandler.checkTokenFromCookie(this.exchange.getRequestHeaders().getFirst("Cookie")) == null) {
+                if(this.authHandler.checkTokenFromCookie(this.exchange.getRequestHeaders().getFirst("Cookie")) == null) {
                     sendErr(401);
                 } else {
                     sendResponse(200, path);
@@ -49,9 +56,16 @@ public class StaticHandler implements HttpHandler {
             this.exchange.sendResponseHeaders(404, response.getBytes().length);
 
             os.write(response.getBytes());
-            System.out.println("Sent 404 to "+clientIP);
+            HashMap<String, String> logData = new HashMap<>();
+            logData.put("client_ip", clientIP);
+            logData.put("path", this.exchange.getRequestURI().getPath());
+            logData.put("status", "404");
+            logger.log("WARN", logData);
         } catch (Exception exception) {
-            System.out.println(exception+" sending 404 to "+this.clientIP);
+            HashMap<String, String> logData = new HashMap<>();
+            logData.put("client_ip", clientIP);
+            logData.put("exception", exception.toString());
+            logger.log("ERROR", logData);
         }
     }
 
@@ -63,9 +77,16 @@ public class StaticHandler implements HttpHandler {
         this.exchange.sendResponseHeaders(err, response.getBytes().length);
 
             os.write(response.getBytes());
-            System.out.println("Sent "+err+" error to "+clientIP);
+            HashMap<String, String> logData = new HashMap<>();
+            logData.put("client_ip", clientIP);
+            logData.put("path", this.exchange.getRequestURI().getPath());
+            logData.put("error_code", String.valueOf(err));
+            logger.log("WARN", logData);
         } catch (Exception exception) {
-            System.out.println(exception+" sending "+err+" to "+ clientIP);
+            HashMap<String, String> logData = new HashMap<>();
+            logData.put("client_ip", clientIP);
+            logData.put("exception", exception.toString());
+            logger.log("ERROR", logData);
         }
     }
 
@@ -93,9 +114,16 @@ public class StaticHandler implements HttpHandler {
                 os.write(buffer, 0, bytesRead);
             }
 
-            System.out.println("Sent "+path+" to "+this.clientIP);
+            HashMap<String, String> logData = new HashMap<>();
+            logData.put("client_ip", clientIP);
+            logData.put("path", path);
+            logData.put("status", String.valueOf(status));
+            logger.log("INFO", logData);
         } catch (Exception exception) {
-            System.out.println(exception+" sending "+path+" to "+this.clientIP);
+            HashMap<String, String> logData = new HashMap<>();
+            logData.put("client_ip", clientIP);
+            logData.put("exception", exception.toString());
+            logger.log("ERROR", logData);
         }
     }
 }

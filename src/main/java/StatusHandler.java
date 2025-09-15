@@ -6,17 +6,23 @@ import java.io.OutputStream;
 
 import org.json.JSONObject;
 
+import java.util.HashMap;
+
 public class StatusHandler implements HttpHandler {
 
     private StatusService StatusService;
+    private Logger logger;
 
-    public StatusHandler(StatusService ss) {
+    public StatusHandler(StatusService ss, Logger logger) {
         this.StatusService = ss;
+        this.logger = logger;
     }
 
     public void handle(HttpExchange exchange) throws IOException {
         String clientIP = exchange.getRemoteAddress().getAddress().getHostAddress();
-        System.out.println("Status Handler Activated by "+clientIP);
+        HashMap<String, String> logData = new HashMap<>();
+        logData.put("client_ip", clientIP);
+        logger.log("INFO", logData);
 
         JSONObject data = this.StatusService.getStatusData(clientIP);
         String response = data.toString();

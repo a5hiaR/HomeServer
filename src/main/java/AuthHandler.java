@@ -15,8 +15,14 @@ public class AuthHandler implements HttpHandler {
     private String clientIP;
     private HttpExchange exchange;
     private static Map<String, String> sessions = new HashMap<>();
+    private Logger logger;
+
+    public AuthHandler(Logger logger) {
+        this.logger = logger;
+    }
 
     public void handle(HttpExchange exchange) throws IOException {
+        HashMap<String, String> logData = new HashMap<>();
         this.exchange = exchange;
         this.clientIP = this.exchange.getRemoteAddress().getAddress().getHostAddress();
 
@@ -27,20 +33,30 @@ public class AuthHandler implements HttpHandler {
             if (path.equals("/api/auth/admin")) {
                 String usr = parseLogin(body).get("usr");
                 String pswd = parseLogin(body).get("pswd");
-             
-                System.out.println("AuthHandler: Post request from "+clientIP+"\n   Body: \""+body+"\"");
+            
+
                 if ("admin".equals(usr)&&"test".equals(pswd)) {
                     String tkn = UUID.randomUUID().toString();
                     sessions.put(tkn, usr);
 
+                    logData.clear();
+                    logData.put("client_ip", this.clientIP);
+                    logData.put("user", usr);
+                    logData.put("message", "Successful Admin Login");
+                    logger.log("INFO", logData);
+
                     exchange.getResponseHeaders().add("Set-Cookie", "sessionToken=" + tkn + "; Path=/admin; HttpOnly; SameSite=Strict");
-                    
                     exchange.getResponseHeaders().add("Location", "/admin/index.html");
-
                     exchange.sendResponseHeaders(303, -1);
+                } else {
+                    logData.clear();
+                    logData.put("client_ip", this.clientIP);
+                    logData.put("user", usr);
+                    logData.put("message", "Failed admin login");
+                    logger.log("INFO", logData);
 
-                    System.out.println("AuthHandler: sucessful login from "+ this.clientIP);
-                } else {sendResponse(403, "{\"login\":0}");}
+                    sendResponse(503, "{\"login\":0}");
+                }
             }
         }
     }
@@ -94,9 +110,20 @@ public class AuthHandler implements HttpHandler {
 
         try (OutputStream os = exchange.getResponseBody()) {
             os.write(response);
-            System.out.println("AuthHandler sent "+status+" to "+clientIP);
+            HashMap<String, String> logData = new HashMap<>();
+
+            logData.clear();
+            logData.put("client_ip", clientIP);
+            logData.put("status", String.valueOf(status));
+            logData.put("message", json);
+            logger.log("INFO", logData);
         } catch (Exception exception) {
-            System.out.println(exception+"@AuthHandler sending data to "+clientIP);
+            HashMap<String, String> logData = new HashMap<>();
+
+            logData.clear();
+            logData.put("client_ip", clientIP);
+            logData.put("exception", exception.toString());
+            logger.log("ERROR", logData);
         }
     }
 }
