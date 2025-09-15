@@ -1,17 +1,9 @@
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpExchange;
 
-import java.io.InputStream;
 import java.io.IOException;
-import java.io.OutputStream;
-
-import org.json.JSONObject;
-
-import java.util.HashMap;
 
 public class StaticHandler implements HttpHandler {
-    private String clientIP;
-    private HttpExchange exchange;
     private Logger logger;
     private AuthHandler authHandler;
 
@@ -21,109 +13,24 @@ public class StaticHandler implements HttpHandler {
     }
 
     public void handle(HttpExchange exchange) throws IOException {
-        this.exchange = exchange;
-        this.clientIP = this.exchange.getRemoteAddress().getAddress().getHostAddress();
-        String path = this.exchange.getRequestURI().getPath();
+        try {
+            String path = exchange.getRequestURI().getPath();
 
-        if (path.endsWith("/")) {path += "index.html";}
-
-        if (getClass().getClassLoader().getResourceAsStream("webroot"+path) == null) {
-            send404();
-            return;
+        if (path.endsWith("/")) {
+            path += "index.html";
         }
 
-        switch (path) {
-            case "/admin/index.html":
-                if(authHandler.checkTokenFromCookie(exchange.getRequestHeaders().getFirst("Cookie")) == null) {
-                    sendErr(401);
-                } else {
-                    sendResponse(200, path);
-                }
-                break;
-            default:
-                sendResponse(200, path);
-                break;
-        }
-    }
-
-    public void send404() throws IOException {
-
-        String response = "This is a mediocre 404";
-        
-
-        try(OutputStream os = this.exchange.getResponseBody()) {
-            this.exchange.getResponseHeaders().set("Content-Type","text/plain");
-            this.exchange.sendResponseHeaders(404, response.getBytes().length);
-
-            os.write(response.getBytes());
-            HashMap<String, String> logData = new HashMap<>();
-            logData.put("client_ip", clientIP);
-            logData.put("path", this.exchange.getRequestURI().getPath());
-            logData.put("status", "404");
-            logger.log("WARN", logData);
-        } catch (Exception exception) {
-            HashMap<String, String> logData = new HashMap<>();
-            logData.put("client_ip", clientIP);
-            logData.put("exception", exception.toString());
-            logger.log("ERROR", logData);
-        }
-    }
-
-    public void sendErr(int err) throws IOException {
-        String response = err+" Error!?";
-
-        try(OutputStream os = this.exchange.getResponseBody()) {
-        this.exchange.getResponseHeaders().set("Content-Type", "text/plain");
-        this.exchange.sendResponseHeaders(err, response.getBytes().length);
-
-            os.write(response.getBytes());
-            HashMap<String, String> logData = new HashMap<>();
-            logData.put("client_ip", clientIP);
-            logData.put("path", this.exchange.getRequestURI().getPath());
-            logData.put("error_code", String.valueOf(err));
-            logger.log("WARN", logData);
-        } catch (Exception exception) {
-            HashMap<String, String> logData = new HashMap<>();
-            logData.put("client_ip", clientIP);
-            logData.put("exception", exception.toString());
-            logger.log("ERROR", logData);
-        }
-    }
-
-    public String getContentType(String p) {
-        if (p.endsWith(".html")) return "text/html";
-        if (p.endsWith(".css")) return "text/css";
-        if (p.endsWith(".js")) return "application/javascript";
-        if (p.endsWith(".png")) return "image/png";
-        if (p.endsWith(".jpg") || p.endsWith(".jpeg")) return "image/jpeg";
-        return "application/octet-stream";
-    }
-
-    public void sendResponse(int status, String path) throws IOException {
-        exchange.getResponseHeaders().set("Content-Type", getContentType(path));
-        InputStream resourceStream = getClass().getClassLoader().getResourceAsStream("webroot"+path);
-        
-        try (OutputStream os = exchange.getResponseBody();
-            InputStream is = resourceStream;) {
-            
-            byte[] buffer = new byte[8192];
-            int bytesRead;
-            this.exchange.sendResponseHeaders(status, 0);
-
-            while((bytesRead = is.read(buffer)) != -1) {
-                os.write(buffer, 0, bytesRead);
+        if (path.startsWith("/admin/")) {
+            String user = authHandler.checkTokenFromCookie(exchange.getRequestHeaders().getFirst("Cookie"));
+            if (user == null && !path.equals("/admin/login.html")) {
+                ServerUtils.sendRedirectResponse(exchange, "/admin/login.html", null, logger);
+                return;
             }
+        }
 
-            HashMap<String, String> logData = new HashMap<>();
-            logData.put("client_ip", clientIP);
-            logData.put("path", path);
-            logData.put("status", String.valueOf(status));
-            logger.log("INFO", logData);
-        } catch (Exception exception) {
-            HashMap<String, String> logData = new HashMap<>();
-            logData.put("client_ip", clientIP);
-            logData.put("exception", exception.toString());
-            logger.log("ERROR", logData);
+        ServerUtils.sendFileResponse(exchange, 200, path, logger);
+        } finally {
+            exchange.close();
         }
     }
 }
