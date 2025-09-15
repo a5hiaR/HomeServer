@@ -24,7 +24,6 @@ public class Logger {
     private String tag;
 
     static {
-        // Schedule the flush operation to run periodically from a background thread.
         scheduler.scheduleAtFixedRate(Logger::flushBuffer, 5, 5, TimeUnit.SECONDS);
     }
 

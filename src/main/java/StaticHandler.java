@@ -34,7 +34,7 @@ public class StaticHandler implements HttpHandler {
 
         switch (path) {
             case "/admin/index.html":
-                if(this.authHandler.checkTokenFromCookie(this.exchange.getRequestHeaders().getFirst("Cookie")) == null) {
+                if(authHandler.checkTokenFromCookie(exchange.getRequestHeaders().getFirst("Cookie")) == null) {
                     sendErr(401);
                 } else {
                     sendResponse(200, path);

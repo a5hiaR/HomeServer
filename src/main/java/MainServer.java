@@ -11,6 +11,7 @@ import org.json.JSONObject;
 public class MainServer {
     public static void main(String[] args) throws IOException {
         StatusService StatusService = new StatusService();
+        AuthService authService = new AuthService();
 
         Logger authLogger = new Logger("AuthHandler");
         Logger staticLogger = new Logger("StaticHandler");
@@ -18,7 +19,7 @@ public class MainServer {
 
         HttpServer server = HttpServer.create(new InetSocketAddress(8080), 5);
 
-        AuthHandler authHandler = new AuthHandler(authLogger);
+        AuthHandler authHandler = new AuthHandler(authService, authLogger);
 
         StatusHandler statusHandler = new StatusHandler(StatusService, statusLogger);
         StaticHandler staticHandler = new StaticHandler(staticLogger, authHandler);
