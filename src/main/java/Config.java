@@ -10,6 +10,8 @@ public final class Config {
     public static final String KEYSTORE_PASSWORD = getRequired("KEYSTORE_PASSWORD");
     public static final String KEY_PASSWORD = getEnv("KEY_PASSWORD", KEYSTORE_PASSWORD);
 
+    public static final String LOG_FILE_PATH = getRequired("LOG_FILE_PATH");
+
     private static String getEnv(String key, String defaultValue) {
         String value = dotenv.get(key);
         return (value != null && !value.isBlank()) ? value : defaultValue;
