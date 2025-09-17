@@ -126,4 +126,12 @@ public class ServerUtils {
         logData.put("exception", exception.toString());
         logger.log("ERROR", logData);
     }
+
+    public static void logEvent(Logger logger, String clientIP, String event) {
+        if (logger == null) return;
+        HashMap<String, String> logData = new HashMap<>();
+        logData.put("client_ip", clientIP);
+        logData.put("exception", exception.toString());
+        logger.log("INFO", logData);
+    }
 }
