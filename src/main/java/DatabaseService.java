@@ -31,7 +31,11 @@ public class DatabaseService {
 
     public void connect(String dbPath) throws Exception{
         try {
-            
+            DriverManager.registerDriver(new JDBC());
+
+            connection = DriverManager.getConnection(dbPath);
+
+            ServerUtils.logEvent(logger, "DB-Service", "Database connected");          
         } catch(Exception e) {
             ServerUtils.logException(logger, "DB-Service", e);
             throw new RuntimeException("Database connect() failed", e);

@@ -119,10 +119,9 @@ public class ServerUtils {
         logger.log(level, logData);
     }
 
-    public static void logException(Logger logger, String clientIP, Exception exception) {
+    public static void logException(Logger logger, Exception exception) {
         if (logger == null) return;
         HashMap<String, String> logData = new HashMap<>();
-        logData.put("client_ip", clientIP);
         logData.put("exception", exception.toString());
         logger.log("ERROR", logData);
     }
@@ -130,7 +129,7 @@ public class ServerUtils {
     public static void logEvent(Logger logger, String clientIP, String event) {
         if (logger == null) return;
         HashMap<String, String> logData = new HashMap<>();
-        logData.put("client_ip", clientIP);
+        if(clientIP!=null) logData.put("client_ip", clientIP);
         logData.put("exception", exception.toString());
         logger.log("INFO", logData);
     }
