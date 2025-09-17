@@ -7,14 +7,14 @@ public class DatabaseService {
     private Connection connection;
     private static Logger logger;
 
-    public DatabaseService() {
-        connect();
+    public DatabaseService() throws Exception {
+        connect(Config.DB_URL);
         initializeDatabase();
         logger = new Logger("DatabaseService");
     
     }
 
-    public static synchonized DatabaseService getInstance() {
+    public static synchronized DatabaseService getInstance() throws Exception{
         if (instance == null) {
             instance = new DatabaseService();
         }
@@ -25,12 +25,16 @@ public class DatabaseService {
         return connection;
     }
 
-    public void connect(String dbPath) throws SQLException{
+    public void initializeDatabase() {
+    
+    }
+
+    public void connect(String dbPath) throws Exception{
         try {
             
-        } catch(SQLException e) {
+        } catch(Exception e) {
             ServerUtils.logException(logger, "DB-Service", e);
-            throw RuntimeException("Database connect() failed", e);
+            throw new RuntimeException("Database connect() failed", e);
         }
     }
 }

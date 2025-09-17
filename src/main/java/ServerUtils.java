@@ -108,7 +108,7 @@ public class ServerUtils {
         logResponse(logger, exchange.getRemoteAddress().getAddress().getHostAddress(), 303, exchange.getRequestURI().getPath(), "Redirect to " + location);
     }
 
-    private static void logResponse(Logger logger, String clientIP, int status, String path, String message) {
+    public static void logResponse(Logger logger, String clientIP, int status, String path, String message) {
         if (logger == null) return;
         HashMap<String, String> logData = new HashMap<>();
         logData.put("client_ip", clientIP);
@@ -119,7 +119,7 @@ public class ServerUtils {
         logger.log(level, logData);
     }
 
-    private static void logException(Logger logger, String clientIP, Exception exception) {
+    public static void logException(Logger logger, String clientIP, Exception exception) {
         if (logger == null) return;
         HashMap<String, String> logData = new HashMap<>();
         logData.put("client_ip", clientIP);

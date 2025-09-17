@@ -12,6 +12,8 @@ public final class Config {
 
     public static final String LOG_FILE_PATH = getRequired("LOG_FILE_PATH");
 
+    public static final String DB_URL = getRequired("DB_URL");
+
     private static String getEnv(String key, String defaultValue) {
         String value = dotenv.get(key);
         return (value != null && !value.isBlank()) ? value : defaultValue;
