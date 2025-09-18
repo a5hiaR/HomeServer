@@ -24,7 +24,7 @@ public class AuthHandler implements HttpHandler {
             String path = exchange.getRequestURI().getPath();
             
             if ("POST".equalsIgnoreCase(exchange.getRequestMethod())) {
-                if (path.equals("/api/auth/admin")) {
+                if (path.equals("/api/auth/admin/login")) {
                     try {
                     handleAdminLogin(exchange, clientIP);
                     } catch (SQLException e) {
@@ -56,20 +56,11 @@ public class AuthHandler implements HttpHandler {
             logData.put("message", "Successful Admin Login");
             logger.log("INFO", logData);
 
-            String cookie = "sessionToken=" + token + "; Path=/admin; HttpOnly; SameSite=Strict";
+            String cookie = "sessionToken=" + token + "; Path=/; HttpOnly; SameSite=Strict";
             ServerUtils.sendRedirectResponse(exchange, "/admin/index.html", cookie, logger);
         } else {
             String jsonResponse = "{\"login\":0, \"message\":\"Invalid credentials\"}";
             ServerUtils.sendJsonResponse(exchange, 401, jsonResponse, logger);
         }
-    }
-
-    public String checkTokenFromCookie(String cookieHeader) throws SQLException {
-        if (cookieHeader == null || cookieHeader.isEmpty()) {
-            return null;
-        }
-        Map<String, String> cookies = ServerUtils.parseCookie(cookieHeader);
-        String token = cookies.get("sessionToken");
-        return authService.getUserForToken(token);
     }
 }
