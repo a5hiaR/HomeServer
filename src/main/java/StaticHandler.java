@@ -21,10 +21,14 @@ public class StaticHandler implements HttpHandler {
             }
 
             if (path.startsWith("/admin/")) {
-                String user = authHandler.checkTokenFromCookie(exchange.getRequestHeaders().getFirst("Cookie"));
-                if (user == null && !path.equals("/admin/login.html")) {
-                    ServerUtils.sendRedirectResponse(exchange, "/admin/login.html", null, logger);
-                    return;
+                try {
+                    String user = authHandler.checkTokenFromCookie(exchange.getRequestHeaders().getFirst("Cookie"));
+                    if (user == null && !path.equals("/admin/login.html")) {
+                        ServerUtils.sendRedirectResponse(exchange, "/admin/login.html", null, logger);
+                        return;
+                    }
+                } catch (Exception e) {
+                    ServerUtils.logException(logger, e);
                 }
             }
 

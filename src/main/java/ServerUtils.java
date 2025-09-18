@@ -67,7 +67,7 @@ public class ServerUtils {
                 os.write(response);
             }
         } catch (Exception exception) {
-            logException(logger, clientIP, exception);
+            logException(logger, exception);
         } finally {
             logResponse(logger, clientIP, status, exchange.getRequestURI().getPath(), json);
         }
@@ -90,7 +90,7 @@ public class ServerUtils {
             }
             logResponse(logger, clientIP, status, path, "File sent: " + path);
         } catch (Exception exception) {
-            logException(logger, clientIP, exception);
+            logException(logger, exception);
         }
     }
 
@@ -130,7 +130,7 @@ public class ServerUtils {
         if (logger == null) return;
         HashMap<String, String> logData = new HashMap<>();
         if(clientIP!=null) logData.put("client_ip", clientIP);
-        logData.put("exception", exception.toString());
+        logData.put("message", event);
         logger.log("INFO", logData);
     }
 }

@@ -20,8 +20,9 @@ public class MainServer {
         try {
             SSLContext sslContext = createSSLContext();
 
-            HttpsServer server = HttpsServer.create(new InetSocketAddress(Config.SERVER_PORT), 0);
-
+            HttpsServer server = HttpsServer.create(new InetSocketAddress(Config.SERVER_HOST, Config.SERVER_PORT), 0);
+            
+            DatabaseService initialize = DatabaseService.getInstance();
 
             server.setHttpsConfigurator(new HttpsConfigurator(sslContext));
 
@@ -64,7 +65,6 @@ public class MainServer {
             keyStore = KeyStore.getInstance("JKS");
             keyStore.load(fis, keystorePassword);
         } catch (IOException e) {
-            // A BadPaddingException here usually means the KEYSTORE_PASSWORD is wrong.
             throw new RuntimeException("Failed to load keystore. Check KEYSTORE_PATH and KEYSTORE_PASSWORD.", e);
         }
         
@@ -73,7 +73,6 @@ public class MainServer {
             keyManagerFactory = KeyManagerFactory.getInstance("SunX509");
             keyManagerFactory.init(keyStore, keyPassword);
         } catch (Exception e) {
-            // A BadPaddingException here means the KEY_PASSWORD is wrong for the private key.
             throw new RuntimeException("Failed to initialize KeyManager. Check KEY_PASSWORD.", e);
         }
 

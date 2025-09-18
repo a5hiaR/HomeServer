@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import java.sql.*;
+
 public class AuthHandler implements HttpHandler {
     private final AuthService authService;
     private final Logger logger;
@@ -16,14 +18,18 @@ public class AuthHandler implements HttpHandler {
     }
 
     @Override
-    public void handle(HttpExchange exchange) throws IOException {
+    public void handle(HttpExchange exchange) throws IOException{
         try {
             String clientIP = exchange.getRemoteAddress().getAddress().getHostAddress();
             String path = exchange.getRequestURI().getPath();
             
             if ("POST".equalsIgnoreCase(exchange.getRequestMethod())) {
                 if (path.equals("/api/auth/admin")) {
+                    try {
                     handleAdminLogin(exchange, clientIP);
+                    } catch (SQLException e) {
+                        ServerUtils.logException(logger, e);
+                    }
                 } else {
                     ServerUtils.sendErrorResponse(exchange, 404, "Not Found", logger);
                 }
@@ -35,7 +41,7 @@ public class AuthHandler implements HttpHandler {
         }
     }
 
-    private void handleAdminLogin(HttpExchange exchange, String clientIP) throws IOException {
+    private void handleAdminLogin(HttpExchange exchange, String clientIP) throws IOException, SQLException {
         String body = new String(exchange.getRequestBody().readAllBytes());
         Map<String, String> loginData = ServerUtils.parseUrlEncoded(body);
         String usr = loginData.get("usr");
@@ -58,7 +64,7 @@ public class AuthHandler implements HttpHandler {
         }
     }
 
-    public String checkTokenFromCookie(String cookieHeader) {
+    public String checkTokenFromCookie(String cookieHeader) throws SQLException {
         if (cookieHeader == null || cookieHeader.isEmpty()) {
             return null;
         }
