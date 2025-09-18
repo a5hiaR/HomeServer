@@ -44,7 +44,6 @@ public class DatabaseService {
             statement.execute(createActiveSessionsTable);
             statement.execute(createAdminTable);
 
-            // Use INSERT OR IGNORE to prevent crashing on startup if admin already exists.
             String insertAdminSQL = "INSERT OR IGNORE INTO admins (username, password) VALUES (?, ?)";
             try (PreparedStatement ps = connection.prepareStatement(insertAdminSQL)) {
                 ps.setString(1, "admin");

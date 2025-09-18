@@ -24,15 +24,13 @@ public class AuthHandler implements HttpHandler {
             String path = exchange.getRequestURI().getPath();
             
             if ("POST".equalsIgnoreCase(exchange.getRequestMethod())) {
-                if (path.equals("/api/auth/admin")) {
-                    try {
-                    handleAdminLogin(exchange, clientIP);
-                    } catch (SQLException e) {
-                        ServerUtils.logException(logger, e);
-                    }
-                } else {
-                    ServerUtils.sendErrorResponse(exchange, 404, "Not Found", logger);
-                }
+                switch(path) {
+                    case "/api/auth/login":
+                        handleAdminLogin(exchange, clientIP);
+                        break;
+                    default:
+                        ServerUtils.sendErrorResponse(exchange, 404, "Not Found", logger);
+
             } else {
                 ServerUtils.sendErrorResponse(exchange, 405, "Method Not Allowed", logger);
             }
