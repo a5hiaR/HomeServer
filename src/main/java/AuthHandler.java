@@ -28,6 +28,15 @@ public class AuthHandler implements HttpHandler {
                     case "/api/auth/login":
                         handleAdminLogin(exchange, clientIP);
                         break;
+                    case "/api/auth/logout":
+                        handleAdminLogout(exchange, clientIP);
+                        break;
+                    case "/api/auth/add/admin":
+                        handleAddAdmin(exchange, clientIP);
+                        break;
+                    case "/api/auth/delete/admin":
+                        handleDeleteAdmin(exchange, clientIP);
+                        break;
                     default:
                         ServerUtils.sendErrorResponse(exchange, 404, "Not Found", logger);
 
@@ -60,6 +69,18 @@ public class AuthHandler implements HttpHandler {
             String jsonResponse = "{\"login\":0, \"message\":\"Invalid credentials\"}";
             ServerUtils.sendJsonResponse(exchange, 401, jsonResponse, logger);
         }
+    }
+
+    private void handleAdminLogout(HttpExchange exchange, String clientIP) throws IOException, SQLException {
+        String token = ServerUtils.parseCookie(exchange.getRequestHeaders().getFirst("Cookie")).get("sessionToken");
+
+        if (token != null) {
+            DatabaseService.deleteActiveSession(token);
+        }
+    }
+
+    private void handleAddAdmin(HttpExchange exchange, String clientIP) throws IOException, SQLException {
+        
     }
 
     public String checkTokenFromCookie(String cookieHeader) throws SQLException {
