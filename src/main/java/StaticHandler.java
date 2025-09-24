@@ -22,11 +22,17 @@ public class StaticHandler implements HttpHandler {
 
             if (path.startsWith("/admin/")) {
                 try {
-                    String user = authHandler.checkTokenFromCookie(exchange.getRequestHeaders().getFirst("Cookie"));
+                    String token = AuthService.getTokenFromExchange(exchange);
+                    String user = AuthService.getUserForToken(token);
+                    System.out.println("/admin/* accesed by token: "+ AuthService.getTokenFromExchange(exchange) + ".");
                     if (user == null && !path.equals("/admin/login.html")) {
                         ServerUtils.sendRedirectResponse(exchange, "/admin/login.html", null, logger);
                         return;
-                    }
+                    } else if (token != null && user == null) {
+                        String cookie = "sessionToken=; Expires=Thu, 01 Jan 1970 00:00:00 GMT; Path=/; HttpOnly; SameSite=Strict";
+                        ServerUtils.sendRedirectResponse(exchange, "/admin/login.html", cookie, logger);
+                        return;
+                    } else if (user != null && path.equals("/admin/login.html")) {ServerUtils.sendRedirectResponse(exchange, "/admin/index.html", null, logger); return;}
                 } catch (Exception e) {
                     ServerUtils.logException(logger, e);
                 }

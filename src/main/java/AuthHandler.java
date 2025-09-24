@@ -24,14 +24,39 @@ public class AuthHandler implements HttpHandler {
             String path = exchange.getRequestURI().getPath();
             
             if ("POST".equalsIgnoreCase(exchange.getRequestMethod())) {
-                if (path.equals("/api/auth/admin/login")) {
-                    try {
-                    handleAdminLogin(exchange, clientIP);
-                    } catch (SQLException e) {
-                        ServerUtils.logException(logger, e);
-                    }
-                } else {
-                    ServerUtils.sendErrorResponse(exchange, 404, "Not Found", logger);
+                switch(path) {
+                    case "/api/auth/admin/login":
+                        try {
+                            AuthService.handleAdminLogin(exchange, clientIP);} 
+                        catch (Exception e) {
+                            ServerUtils.logException(logger, e);
+                        }
+                        break;
+                    case "/api/auth/admin/logout":
+                        try {
+                            String token = AuthService.getTokenFromExchange(exchange);
+                            System.out.println("Called admin logout with token: " + token + ".");
+                            AuthService.handleAdminLogout(token, exchange, clientIP);
+                        } catch (Exception e) {
+                            ServerUtils.logException(logger, e);
+                        }
+                        break;
+                    case "/api/auth/admin/add":
+                        try {
+                            AuthService.handleAddAdmin(exchange, clientIP);
+                        } catch (Exception e) {
+                            ServerUtils.logException(logger, e);
+                        }
+                        break;
+                    case "/api/auth/admin/remove":
+                        try {
+                            AuthService.handleRemoveAdmin(exchange, clientIP);
+                        } catch (Exception e) {
+                            ServerUtils.logException(logger, e);
+                        }
+                        break;
+                    default:
+                        ServerUtils.sendErrorResponse(exchange, 404, "Not Found", logger);
                 }
             } else {
                 ServerUtils.sendErrorResponse(exchange, 405, "Method Not Allowed", logger);
