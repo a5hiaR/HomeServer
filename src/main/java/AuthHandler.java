@@ -25,21 +25,39 @@ public class AuthHandler implements HttpHandler {
             
             if ("POST".equalsIgnoreCase(exchange.getRequestMethod())) {
                 switch(path) {
-                    case "/api/auth/login":
-                        handleAdminLogin(exchange, clientIP);
+                    case "/api/auth/admin/login":
+                        try {
+                            AuthService.handleAdminLogin(exchange, clientIP);} 
+                        catch (Exception e) {
+                            ServerUtils.logException(logger, e);
+                        }
                         break;
-                    case "/api/auth/logout":
-                        handleAdminLogout(exchange, clientIP);
+                    case "/api/auth/admin/logout":
+                        try {
+                            String token = AuthService.getTokenFromExchange(exchange);
+                            System.out.println("Called admin logout with token: " + token + ".");
+                            AuthService.handleAdminLogout(token, exchange, clientIP);
+                        } catch (Exception e) {
+                            ServerUtils.logException(logger, e);
+                        }
                         break;
-                    case "/api/auth/add/admin":
-                        handleAddAdmin(exchange, clientIP);
+                    case "/api/auth/admin/add":
+                        try {
+                            AuthService.handleAddAdmin(exchange, clientIP);
+                        } catch (Exception e) {
+                            ServerUtils.logException(logger, e);
+                        }
                         break;
-                    case "/api/auth/delete/admin":
-                        handleDeleteAdmin(exchange, clientIP);
+                    case "/api/auth/admin/remove":
+                        try {
+                            AuthService.handleRemoveAdmin(exchange, clientIP);
+                        } catch (Exception e) {
+                            ServerUtils.logException(logger, e);
+                        }
                         break;
                     default:
                         ServerUtils.sendErrorResponse(exchange, 404, "Not Found", logger);
-
+                }
             } else {
                 ServerUtils.sendErrorResponse(exchange, 405, "Method Not Allowed", logger);
             }
@@ -63,32 +81,11 @@ public class AuthHandler implements HttpHandler {
             logData.put("message", "Successful Admin Login");
             logger.log("INFO", logData);
 
-            String cookie = "sessionToken=" + token + "; Path=/admin; HttpOnly; SameSite=Strict";
+            String cookie = "sessionToken=" + token + "; Path=/; HttpOnly; SameSite=Strict";
             ServerUtils.sendRedirectResponse(exchange, "/admin/index.html", cookie, logger);
         } else {
             String jsonResponse = "{\"login\":0, \"message\":\"Invalid credentials\"}";
             ServerUtils.sendJsonResponse(exchange, 401, jsonResponse, logger);
         }
-    }
-
-    private void handleAdminLogout(HttpExchange exchange, String clientIP) throws IOException, SQLException {
-        String token = ServerUtils.parseCookie(exchange.getRequestHeaders().getFirst("Cookie")).get("sessionToken");
-
-        if (token != null) {
-            DatabaseService.deleteActiveSession(token);
-        }
-    }
-
-    private void handleAddAdmin(HttpExchange exchange, String clientIP) throws IOException, SQLException {
-        
-    }
-
-    public String checkTokenFromCookie(String cookieHeader) throws SQLException {
-        if (cookieHeader == null || cookieHeader.isEmpty()) {
-            return null;
-        }
-        Map<String, String> cookies = ServerUtils.parseCookie(cookieHeader);
-        String token = cookies.get("sessionToken");
-        return authService.getUserForToken(token);
     }
 }

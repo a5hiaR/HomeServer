@@ -1,7 +1,8 @@
 import java.sql.*;
 import org.sqlite.JDBC;
 import org.sqlite.SQLiteConfig;
-
+import java.util.HashMap;
+import java.util.Map;
 
 public class DatabaseService {
     private static DatabaseService instance;
@@ -44,7 +45,7 @@ public class DatabaseService {
             statement.execute(createActiveSessionsTable);
             statement.execute(createAdminTable);
 
-            String insertAdminSQL = "INSERT OR IGNORE INTO admins (username, password) VALUES (?, ?)";
+            String insertAdminSQL = "INSERT OR IGNORE INTO admins (username, password) VALUES (?, ?);";
             try (PreparedStatement ps = connection.prepareStatement(insertAdminSQL)) {
                 ps.setString(1, "admin");
                 ps.setString(2, "test");
@@ -69,23 +70,34 @@ public class DatabaseService {
         }
     }
 
-    public static void newActiveSession(String token, String user) throws SQLException {
-        String insertQuery = "INSERT INTO activeSessions (token, user) VALUES (?, ?)";
-        try (PreparedStatement statement = getInstance().getConnection().prepareStatement(insertQuery)) {
-            statement.setString(1, token);
-            statement.setString(2, user);
-            statement.executeUpdate();
-        } catch (Exception e) {
-            ServerUtils.logException(logger, e);
-            throw new SQLException("Failed to create new active session.", e);
-        }
+    public static void newActiveSession(String token, String user) throws SQLException {    
+            String insertQuery = "INSERT INTO activeSessions (token, user) VALUES (?, ?);";
+            try (PreparedStatement statement = getInstance().getConnection().prepareStatement(insertQuery)) {
+                statement.setString(1, token);
+                statement.setString(2, user);
+                statement.executeUpdate();
+
+                HashMap<String, String> logData = new HashMap<>();
+                logData.put("user", user);
+                logData.put("message", "New active session created");
+                logger.log("INFO", logData);
+            } catch (Exception e) {
+                ServerUtils.logException(logger, e);
+                throw new SQLException("Failed to create new active session.", e);
+            }
     }
 
     public static void deleteActiveSession(String token) throws SQLException {
-        String deleteQuery = "DELETE FROM activeSessions WHERE token = ?";
+        String deleteQuery = "DELETE FROM activeSessions WHERE token = ?;";
         try(PreparedStatement statement = getInstance().getConnection().prepareStatement(deleteQuery)) {
             statement.setString(1, token);
-            statement.executeUpdate();
+            int rowsAffected = statement.executeUpdate();
+            if (rowsAffected > 0) {
+                HashMap<String, String> logData = new HashMap<>();
+                logData.put("token", token);
+                logData.put("message", "Active session deleted");
+                logger.log("INFO", logData);
+            }
         } catch (Exception e) {
             ServerUtils.logException(logger, e);
             throw new SQLException("Failed to delete active session.", e);
@@ -93,7 +105,7 @@ public class DatabaseService {
     }
 
     public static String getActiveUser(String token) throws SQLException {
-        String selectQuery = "SELECT user FROM activeSessions WHERE token = ?";
+        String selectQuery = "SELECT user FROM activeSessions WHERE token = ?;";
         try(PreparedStatement statement = getInstance().getConnection().prepareStatement(selectQuery)) {
             statement.setString(1, token);
             try(ResultSet resultSet = statement.executeQuery()) {
@@ -108,12 +120,34 @@ public class DatabaseService {
         return null;
     }
 
+    public static String getActiveSession(String token) throws SQLException {
+        String selectQuery = "SELECT token FROM activeSessions WHERE user = ?;";
+        try(PreparedStatement statement = getInstance().getConnection().prepareStatement(selectQuery)) {
+            statement.setString(1, token);
+            try(ResultSet resultSet = statement.executeQuery()) {
+                if (resultSet.next()) {
+                    return resultSet.getString("token");
+                }
+            }
+        } catch (Exception e) {
+            ServerUtils.logException(logger, e);
+            throw new SQLException("Failed to get active user.", e);
+        }
+        return null;
+    }
+
     public static void addAdmin(String user, String pass) throws SQLException {
-        String insertQuery = "INSERT INTO admins (username, password) VALUES (?, ?)";
+        String insertQuery = "INSERT INTO admins (username, password) VALUES (?, ?);";
         try(PreparedStatement statement = getInstance().getConnection().prepareStatement(insertQuery)) {
             statement.setString(1, user);
             statement.setString(2, pass);
             statement.executeUpdate();
+
+            HashMap<String, String> logData = new HashMap<>();
+            logData.put("event", "AdminAdd");
+            logData.put("user", user);
+            logData.put("message", "Admin user added to database");
+            logger.log("INFO", logData);
         } catch (Exception e) {
             ServerUtils.logException(logger, e);
             throw new SQLException("Failed to add admin.", e);
@@ -121,10 +155,16 @@ public class DatabaseService {
     }
 
     public static void deleteAdmin(String user) throws SQLException {
-        String deleteQuery = "DELETE FROM admins WHERE username = ?";
+        String deleteQuery = "DELETE FROM admins WHERE username = ?;";
         try(PreparedStatement statement = getInstance().getConnection().prepareStatement(deleteQuery)) {
             statement.setString(1, user);
             statement.executeUpdate();
+
+            HashMap<String, String> logData = new HashMap<>();
+            logData.put("event", "AdminDel");
+            logData.put("user", user);
+            logData.put("message", "Admin user deleted from database");
+            logger.log("INFO", logData);
         } catch (Exception e) {
             ServerUtils.logException(logger, e);
             throw new SQLException("Failed to delete admin.", e);
@@ -132,7 +172,7 @@ public class DatabaseService {
     }
     
     public static String getAdminPass(String user) throws SQLException {
-        String selectQuery = "SELECT password FROM admins WHERE username = ?";
+        String selectQuery = "SELECT password FROM admins WHERE username = ?;";
         try(PreparedStatement statement = getInstance().getConnection().prepareStatement(selectQuery)) {
             statement.setString(1, user);
             try(ResultSet resultSet = statement.executeQuery()) {

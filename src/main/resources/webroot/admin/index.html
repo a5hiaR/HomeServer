@@ -7,13 +7,24 @@
     <h1>Welcome to the Admin Page!</h1>
     <p>i lied i havent dont anything yet, besides this testing form</p>
     <div>
-        <form action="/api/auth/add/admin" method="post">
+        <form action="/api/auth/admin/add" method="post">
             <p>Username:</p>
             <input type="text" id="usr" name="usr">
             <p>Password:</p>
             <input type="password" id="pswd" name="pswd">
             <br>
             <input type="submit" value="Add Admin">
+        </form>
+
+        <form action="/api/auth/admin/remove" method="post">
+            <p>Username:</p>
+            <input type="text" id="usr" name="usr">
+            <br>
+            <input type="submit" value="Remove Admin">
+        </form>
+        
+        <form action="/api/auth/admin/logout" method="post">
+            <input type="submit" value="Logout">
         </form>
     </div>
 </body>
